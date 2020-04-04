@@ -62,6 +62,9 @@ export interface Options<QueueType extends Queue<RunFunction, QueueOptions>, Que
 	@default false
 	*/
 	throwOnTimeout?: boolean;
+
+	/** 任务完成事件 */
+    completeAction: (status: string) => void;
 }
 
 export interface DefaultAddOptions extends QueueAddOptions {

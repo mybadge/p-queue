@@ -244,8 +244,20 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 							return undefined;
 						}
 					);
+					
+					options.completeAction&&options.completeAction('resolving')
 					resolve(await operation);
+					if (this._isPaused) {
+						options.completeAction&&options.completeAction('resolve-paused')
+					} else {
+						options.completeAction&&options.completeAction('resolve')
+					}
 				} catch (error) {
+					if (this._isPaused) {
+						options.completeAction&&options.completeAction('resolve-paused')
+					} else {
+						options.completeAction&&options.completeAction('resolve')
+					}
 					reject(error);
 				}
 
