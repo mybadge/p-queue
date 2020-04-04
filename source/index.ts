@@ -226,7 +226,7 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 	/**
 	Adds a sync or async task to the queue. Always returns a promise.
 	*/
-	async add<TaskResultType>(fn: Task<TaskResultType>, options: Partial<EnqueueOptionsType> = {}): Promise<TaskResultType> {
+	async add<TaskResultType>(fn: Task<TaskResultType>, options: Partial<EnqueueOptionsType> = {}, completeAction: (status: string) => void): Promise<TaskResultType> {
 		return new Promise<TaskResultType>((resolve, reject) => {
 			const run = async (): Promise<void> => {
 				this._pendingCount++;
@@ -244,19 +244,19 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 							return undefined;
 						}
 					);
-					
-					options.completeAction&&options.completeAction('resolving')
+
+					completeAction&&completeAction('resolving')
 					resolve(await operation);
 					if (this._isPaused) {
-						options.completeAction&&options.completeAction('resolve-paused')
+						completeAction&&completeAction('resolve-paused')
 					} else {
-						options.completeAction&&options.completeAction('resolve')
+						completeAction&&completeAction('resolve')
 					}
 				} catch (error) {
 					if (this._isPaused) {
-						options.completeAction&&options.completeAction('resolve-paused')
+						completeAction&&completeAction('resolve-paused')
 					} else {
-						options.completeAction&&options.completeAction('resolve')
+						completeAction&&completeAction('resolve')
 					}
 					reject(error);
 				}
@@ -278,7 +278,7 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 		functions: ReadonlyArray<Task<TaskResultsType>>,
 		options?: EnqueueOptionsType
 	): Promise<TaskResultsType[]> {
-		return Promise.all(functions.map(async function_ => this.add(function_, options)));
+		return Promise.all(functions.map(async function_ => this.add(function_, options, null)));
 	}
 
 	/**
