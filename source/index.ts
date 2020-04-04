@@ -10,6 +10,8 @@ type Task<TaskResultType> =
 	| (() => PromiseLike<TaskResultType>)
 	| (() => TaskResultType);
 
+type CompleteAction = ((status: string)=> void) | null
+
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const empty = (): void => {};
 
@@ -226,7 +228,7 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 	/**
 	Adds a sync or async task to the queue. Always returns a promise.
 	*/
-	async add<TaskResultType>(fn: Task<TaskResultType>, options: Partial<EnqueueOptionsType> = {}, completeAction: (status: string) => void): Promise<TaskResultType> {
+	async add<TaskResultType>(fn: Task<TaskResultType>, options: Partial<EnqueueOptionsType> = {}, completeAction: CompleteAction = null): Promise<TaskResultType> {
 		return new Promise<TaskResultType>((resolve, reject) => {
 			const run = async (): Promise<void> => {
 				this._pendingCount++;
@@ -278,7 +280,7 @@ export default class PQueue<QueueType extends Queue<RunFunction, EnqueueOptionsT
 		functions: ReadonlyArray<Task<TaskResultsType>>,
 		options?: EnqueueOptionsType
 	): Promise<TaskResultsType[]> {
-		return Promise.all(functions.map(async function_ => this.add(function_, options, null)));
+		return Promise.all(functions.map(async function_ => this.add(function_, options)));
 	}
 
 	/**
